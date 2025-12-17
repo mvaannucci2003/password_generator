@@ -1,10 +1,9 @@
-import string
 import secrets
 
 LOWERCASE_CHARS = "abcdefghijklmnopqrstuvwxyz"
 UPPERCASE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-NUMBER_CHARS = "0, 1, 2, 3, 4, 5, 6, 7, 8, 9"
-SYMBOL_CHARS = "! @ # $ % ^ & * ( ) _ + | ; : < > , . / ?`~[]=-"
+NUMBER_CHARS = "0123456789"
+SYMBOL_CHARS = "!@#$%^&*()_+|;:<>,./?`~[]=-"
 
 
 def validate_params(
@@ -22,24 +21,25 @@ def validate_params(
         return True
 
     else:
-        raise TypeError(
-            f"{length} must be at least 8 numbers or a maximum of 128. Also, need at least one param to be True."
-        )
+        return False
 
 
 def build_char_pool(
     use_lowercase: bool, use_uppercase: bool, use_numbers: bool, use_symbols: bool
 ) -> str:
     """build a string based on user preference."""
-    use_lowercase = LOWERCASE_CHARS
-    use_uppercase = UPPERCASE_CHARS
-    use_numbers = NUMBER_CHARS
-    use_symbols = SYMBOL_CHARS
+    pool = ""
 
-    chars = use_uppercase or use_lowercase
-    nums_symbols = use_numbers or use_symbols
+    if use_lowercase:
+        pool = pool + LOWERCASE_CHARS
+    if use_uppercase:
+        pool = pool + UPPERCASE_CHARS
+    if use_numbers:
+        pool = pool + NUMBER_CHARS
+    if use_symbols:
+        pool = pool + SYMBOL_CHARS
 
-    return chars or nums_symbols
+    return pool
 
 
 def generate_password(
@@ -50,15 +50,23 @@ def generate_password(
     use_symbols: bool = True,
 ) -> str | None:
     """Generate a cryptographically secure random password."""
-    pass
+
+    if not validate_params(length, use_lowercase, use_uppercase, use_numbers, use_symbols):
+        return None
+    chars = build_char_pool(use_lowercase, use_uppercase, use_numbers, use_symbols)
+
+
+    password = "".join(secrets.choice(chars) for _ in range(length))
+
+    return password
+
 
 
 if __name__ == "__main__":
     print(
-        build_char_pool(
-            use_lowercase=False,
-            use_numbers=False,
-            use_symbols=False,
-            use_uppercase=True,
-        )
+        generate_password()
     )
+    print(
+        generate_password(length=24, use_symbols=False)
+    )
+    print(generate_password(length=5))
