@@ -1,6 +1,7 @@
 import string
 import re
 from collections import Counter
+
 # Total score: 0-100 points
 # Length score: 0-25 points
 # Variety score: 0-60 points (15 points per character type)
@@ -30,7 +31,6 @@ def calculate_length_score(password: str) -> int:
         pass_length = 25
 
     return pass_length
-
 
 
 # Scoring rules:
@@ -77,27 +77,24 @@ def calculate_pattern_penalty(password: str) -> int:
     SYMBOL_CHARS = string.punctuation
 
     if re.findall(r"(.)\1", password):
-        score -= 5
+        score -= 4
 
     if not any(c.islower() for c in password):
-        score -= 5
+        score -= 4
     if not any(c.isupper() for c in password):
-        score -= 5
+        score -= 4
     if not any(c.isdigit() for c in password):
-        score -= 5
+        score -= 4
     if not any(c in SYMBOL_CHARS for c in password):
-        score -= 5
+        score -= 4
 
-    if [c for c, cnt in dup.items() if cnt > 1]:
-        score -= 5
+    if [c for c, cnt in dup.items() if cnt > 2]:
+        score -= 4
 
     return score
 
 
-
-
-
-def check_strength(password: str) -> int:
+def check_strength(password: str) -> dict:
     """
     Analyze password strength and return comprehensive results.
 
@@ -106,23 +103,47 @@ def check_strength(password: str) -> int:
     :return: Description
     :rtype: int
     """
-    strength = dict(
-        score = 0,
-        rating = ['Very Weak', 'Weak', 'Medium', 'Strong', 'Very Strong'],
-        length = 0,
-        has_lower = True,
-        has_upper = True,
-        has_numbers = True,
-        has_symbols = True
+    total = sum(
+        [
+            calculate_length_score(password),
+            calculate_pattern_penalty(password),
+            calculate_variety_score(password),
+        ]
     )
 
-    if calculate_length_score(password):
-        pass
-        # TODO Calculate your functions by putting them in the sum function for the accumlated score
-        # TODO Determine the string rating based on the resulted score similar idea to the bool range check.
-        # TODO Check character types by again reusing the logic from check_variety
-        # TODO Return your DICT and complete the function.
+    strength = dict(
+        score=0,
+        rating=["Very Weak", "Weak", "Medium", "Strong", "Very Strong"],
+        length=0,
+        has_lower=True,
+        has_upper=True,
+        has_numbers=True,
+        has_symbols=True,
+    )
+    SYMBOL_CHARS = string.punctuation
+    strength["score"] += total
 
+    if 0 <= strength["score"] <= 20:
+        strength["rating"] = "Very Weak"
+    if 20 <= strength["score"] <= 40:
+        strength["rating"] = "Weak"
+    if 40 <= strength["score"] <= 60:
+        strength["rating"] = "Medium"
+    if 60 <= strength["score"] <= 80:
+        strength["rating"] = "Strong"
+    if 80 <= strength["score"] <= 100:
+        strength["rating"] = "Very Strong"
+
+    if any(c.islower() for c in password):
+        strength["has_lower"] = True
+    if any(c.isupper() for c in password):
+        strength["has_upper"] = True
+    if any(c.isdigit() for c in password):
+        strength["has_numbers"] = True
+    if any(c in SYMBOL_CHARS for c in password):
+        strength["has_symbols"] = True
+
+    return strength
 
 
 if __name__ == "__main__":
@@ -131,14 +152,14 @@ if __name__ == "__main__":
 
     print(calculate_variety_score(password="passwor2"))
 
-    print(calculate_pattern_penalty(password="Fasonhs1@m"))
+    print(calculate_pattern_penalty(password="password"))
 
-    # result = check_strength("password")
-    # print(f"Password: password")
-    # print(f"Score: {result['score']}")
-    # print(f"Rating: {result['rating']}")
+    result = check_strength("password")
+    print("Password: password")
+    print(f"Score: {result['score']}")
+    print(f"Rating: {result['rating']}")
 
-    # result = check_strength("P@ssw0rd!2024")
-    # print(f"\nPassword: P@ssw0rd!2024")
-    # print(f"Score: {result['score']}")
-    # print(f"Rating: {result['rating']}")
+    result = check_strength("P@ssw0rd!2024")
+    print("\nPassword: P@ssw0rd!2024")
+    print(f"Score: {result['score']}")
+    print(f"Rating: {result['rating']}")
