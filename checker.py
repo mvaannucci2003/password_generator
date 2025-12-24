@@ -159,7 +159,7 @@ if __name__ == "__main__":
     print(f"Score: {result['score']}")
     print(f"Rating: {result['rating']}")
 
-    result = check_strength("P@ssw0rd!2024")
+    result = check_strength("P@ssw0rd2024")
     print("\nPassword: P@ssw0rd!2024")
     print(f"Score: {result['score']}")
     print(f"Rating: {result['rating']}")
